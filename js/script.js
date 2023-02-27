@@ -24,9 +24,6 @@ const contactsWrapper = document.querySelector('.new-client__contacts');
 const $newContactButton = document.querySelector('.contact-btn');
 const $newClientError = document.querySelector('.new-client__error');
 
-//форма добавления нового клиента
-
-//окно подтверждения удаления
 const $confirmDialog = document.getElementById('confirm-dialog');
 const $confirmBtn = document.querySelector('.confirm-btn');
 const $confirmCancelBtn = document.querySelector('.confirm-cancel-btn');
@@ -53,6 +50,8 @@ $newClientLastnameInp.addEventListener('click', () => {
   $newClientLastnameLabel.classList.remove('form-modal__label--lastname');
 });
 
+// вспомогательные функции
+
 function getDateString(date) {
   let year = date.getFullYear();
   let month = date.getMonth() + 1;
@@ -74,6 +73,52 @@ function getTimeString(date) {
   }
   return `${hours}:${minutes}`;
 };
+
+function getContactString(value) {
+  switch (value) {
+    case 'phone':
+      return 'Телефон';
+      break;
+    case 'additional-phone':
+      return 'Телефон';
+      break;
+    case 'fb':
+      return 'Facebook';
+      break;
+    case 'vk':
+      return 'Vkontakte';
+      break;
+    case 'email':
+      return 'Email';
+      break;
+    default:
+      return 'Другое';
+  }
+};
+
+function getContactType(value) {
+  switch (value) {
+    case 'Телефон':
+      return 'phone';
+      break;
+    case 'Доп.телефон':
+      return 'additional-phone';
+      break;
+    case 'Facebook':
+      return 'fb';
+      break;
+    case 'Vkontakte':
+      return 'vk';
+      break;
+    case 'Email':
+      return 'email';
+      break;
+    default:
+      return 'other';
+  }
+};
+
+// создание нового контакта
 
 function createContactElement(contact) {
   const $contactDiv = document.createElement('div');
@@ -171,19 +216,235 @@ function createContactElement(contact) {
   return $contactDiv;
 };
 
-function getupdatedContactsArray() {
-  const contactElements = document.querySelectorAll('.add-new-contact');
-  const updatedContacts = [];
-  contactElements.forEach((element) => {
-    updatedContacts.push({
-      type: getContactString(element.querySelector('select').value),
-      value: element.querySelector('input').value,
+// создание элементов и отрисовка таблицы
+
+function getClientItem(clientObj, onDelete) {
+  const $clientTr = document.createElement('tr');
+  const $clientTdID = document.createElement('td');
+  const $clientTdName = document.createElement('td');
+  const $clientTdCreated = document.createElement('td');
+  const $clientTdChanged = document.createElement('td');
+  const $clientTdContacts = document.createElement('td');
+  const $clientTdActions = document.createElement('td');
+
+  const $spanTimeCreated = document.createElement('span');
+  const $spanTimeChanged = document.createElement('span');
+
+  clientObj.contacts.forEach((contact) => {
+    const $divTooltip = document.createElement('div');
+    const $divMarker = document.createElement('div');
+    const $divTooltipText = document.createElement('div');
+    $divTooltip.classList.add('contacts__icon', 'tooltip');
+    switch (contact.type) {
+      case 'Телефон':
+        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--phone');
+        break;
+      case 'Email':
+        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--mail');
+        break;
+      case 'Facebook':
+        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--fb');
+        break;
+      case 'Vkontakte':
+        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--vk');
+        break;
+      default:
+        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--other');
+    }
+    $divTooltipText.classList.add('tooltip__text');
+    $divTooltipText.textContent = contact.value;
+    $divMarker.append($divTooltipText);
+    $divTooltip.append($divMarker);
+    $clientTdContacts.append($divTooltip);
+    // $divTooltip.append($divTooltipText);
+  });
+
+  const $clientButtonsWrap = document.createElement('div');
+  const $clientDeleteBtn = document.createElement('button');
+  const $clientChangeBtn = document.createElement('button');
+
+  //добавляем классы
+  $clientTr.classList.add('table__row');
+  $clientTdID.classList.add('table__data', 'id');
+  $clientTdName.classList.add('table__data');
+  $clientTdCreated.classList.add('table__data', 'dates');
+  $clientTdChanged.classList.add('table__data', 'dates');
+  $clientTdContacts.classList.add('table__data', 'contacts');
+  $clientTdActions.classList.add('table__data');
+  $clientButtonsWrap.classList.add('table__buttons');
+  $spanTimeCreated.classList.add('time');
+  $spanTimeChanged.classList.add('time');
+  $clientChangeBtn.classList.add('table__btn', 'table__btn--change', 'btn-reset');
+  $clientDeleteBtn.classList.add('table__btn', 'table__btn--delete', 'btn-reset');
+
+  //добавляем содержимое
+  $clientTdID.textContent = clientObj.id;
+  $clientTdName.textContent = clientObj.fio;
+  $clientTdCreated.textContent = clientObj.created;
+  $clientTdChanged.textContent = clientObj.updated;
+  $spanTimeCreated.textContent = clientObj.timeCreated;
+  $spanTimeChanged.textContent = clientObj.timeupdated;
+  $clientChangeBtn.textContent = 'Изменить';
+  $clientDeleteBtn.textContent = 'Удалить';
+
+  //добавляем на страницу
+  $clientTr.append($clientTdID);
+  $clientTr.append($clientTdName);
+  $clientTr.append($clientTdCreated);
+  $clientTr.append($clientTdChanged);
+  $clientTr.append($clientTdContacts);
+  $clientButtonsWrap.append($clientChangeBtn);
+  $clientButtonsWrap.append($clientDeleteBtn);
+  $clientTdActions.append($clientButtonsWrap);
+  $clientTr.append($clientTdActions);
+  $clientTdCreated.append($spanTimeCreated);
+  $clientTdChanged.append($spanTimeChanged);
+
+  //обработчики кнопок
+
+  $clientDeleteBtn.addEventListener('click', (evt) => {
+    // eslint-disable-next-line no-restricted-globals
+    $confirmDialog.showModal();
+    $confirmCancelBtn.addEventListener('click', () => {
+      $confirmDialog.close();
+    });
+    $confirmCloseBtn.addEventListener('click', () => {
+      $confirmDialog.close();
+    });
+    $confirmDialog.addEventListener('close', () => {
+      if ($confirmDialog.returnValue === 'confirm') {
+        $clientTr.remove();
+        onDelete(clientObj.id);
+      }
     });
   });
-  return updatedContacts;
+
+  $clientChangeBtn.addEventListener('click', () => {
+    // eslint-disable-next-line no-restricted-globals
+    const client = getClient(clientObj.id);
+    renderUpdateModal(client, deleteClient);
+  });
+
+  return $clientTr;
 };
 
-//работа с окном изменения данных
+async function renderClientsTable(clients) {
+  const clientsList = await clients;
+  $tableBody.innerHTML = '';
+
+  if (clientsList !== null && clientsList !== '') {
+    $tableLoad.classList.add('hidden');
+    let copyClientsList = [...clientsList];
+    const currentDate = new Date();
+
+    copyClientsList.forEach((client) => {
+      client.fio = `${client.surname} ${client.name} ${client.lastName}`;
+      client.created = getDateString(new Date(client.createdAt));
+      client.updated = getDateString(new Date(client.updatedAt));
+      client.timeCreated = getTimeString(new Date(client.createdAt));
+      client.timeupdated = getTimeString(new Date(client.updatedAt));
+      client.madeDateTime = new Date(client.createdAt);
+      client.changedDateTime = new Date(client.updatedAt);
+    });
+
+    // сортировка
+    copyClientsList = copyClientsList.sort((a, b) => {
+      let sort = a[sortColumnFlag] > b[sortColumnFlag];
+      if (sortDirFlag === false) {
+        sort = a[sortColumnFlag] < b[sortColumnFlag];
+      }
+      if (sort) {
+        return -1;
+      }
+      return sort;
+    });
+
+    copyClientsList.forEach((client) => {
+      const $newTr = getClientItem(client, deleteClient);
+      $tableBody.append($newTr);
+    });
+  }
+};
+
+renderClientsTable(getClientsArray());
+
+// работа с окном добавления нового клиента
+
+$newClientOpenBtn.addEventListener('click', () => {
+  $newClientModal.classList.remove('hidden');
+  $overlay.classList.remove('hidden');
+});
+
+$newContactButton.addEventListener('click', (evt) => {
+  evt.preventDefault();
+  const contactElements = document.querySelectorAll('.add-new-contact');
+  if (contactElements.length === 10) {
+    $newContactButton.classList.add('hidden');
+    return;
+  } else {
+    $newContactButton.classList.remove('hidden');
+    const newContact = createContactElement();
+    contactsWrapper.append(newContact);
+    contactsWrapper.classList.remove('hidden');
+    const currentElements = document.querySelectorAll('.add-new-contact');
+      if (currentElements.length === 10) {
+        $newContactButton.classList.add('hidden');
+        return;
+      }
+  }
+});
+
+$newClientForm.addEventListener('submit', async (evt) => {
+  evt.preventDefault();
+  sendData(onNewClientFormSent, throwNewClientError);
+});
+
+function onNewClientModalClose() {
+  $newClientModal.classList.add('hidden');
+  $overlay.classList.add('hidden');
+  const $newClientInputs = document.querySelectorAll('.new-client__input');
+  $newClientInputs.forEach((input) => {
+    input.value = '';
+  });
+  const contacts = $newClientModal.querySelectorAll('.add-new-contact');
+  contacts.forEach((contact) => contact.remove());
+  $newClientSurnameLabel.classList.add('form-modal__label--surname');
+  $newClientNameLabel.classList.add('form-modal__label--name');
+  $newClientLastnameLabel.classList.add('form-modal__label--lastname');
+  $newContactButton.classList.remove('hidden');
+  contactsWrapper.classList.add('hidden');
+};
+
+function onNewClientFormSent() {
+  onNewClientModalClose();
+  renderClientsTable(getClientsArray());
+};
+
+function throwNewClientError(errorText) {
+  $newClientError.textContent = '';
+  $newClientError.textContent = errorText;
+}
+
+$newClientModalClose.addEventListener('click', () => {
+  onNewClientModalClose();
+});
+
+$newClientCancel.addEventListener('click', () => {
+  onNewClientModalClose();
+});
+
+$newClientForm.addEventListener('click', (evt) => {
+  evt._isClickWithinNewModal = true;
+});
+
+$newClientModal.addEventListener('click', (evt) => {
+  if (evt._isClickWithinNewModal) {
+    return;
+  }
+  onNewClientModalClose();
+});
+
+// работа с окном изменения данных
 
 async function renderUpdateModal(client, onDelete) {
   const clientObj = await client;
@@ -301,7 +562,8 @@ async function renderUpdateModal(client, onDelete) {
     sendChanges(onUpdateFormSent, throwUpdateError, clientObj, $updateModalSurnameInp.value, $updateModalNameInp.value, $updateModalLastnameInp.value);
   });
 
-  $updateFormDeleteBtn.addEventListener('click', () => {
+  $updateFormDeleteBtn.addEventListener('click', (evt) => {
+    evt.preventDefault();
     $confirmDialog.showModal();
     $confirmCancelBtn.addEventListener('click', () => {
       $confirmDialog.close();
@@ -377,249 +639,6 @@ function throwUpdateError(errorText) {
   $updateFormError.textContent = errorText;
 };
 
-function getClientItem(clientObj, onDelete) {
-  const $clientTr = document.createElement('tr');
-  const $clientTdID = document.createElement('td');
-  const $clientTdName = document.createElement('td');
-  const $clientTdCreated = document.createElement('td');
-  const $clientTdChanged = document.createElement('td');
-  const $clientTdContacts = document.createElement('td');
-  const $clientTdActions = document.createElement('td');
-
-  const $spanTimeCreated = document.createElement('span');
-  const $spanTimeChanged = document.createElement('span');
-
-  clientObj.contacts.forEach((contact) => {
-    const $divTooltip = document.createElement('div');
-    const $divMarker = document.createElement('div');
-    const $divTooltipText = document.createElement('div');
-    $divTooltip.classList.add('contacts__icon', 'tooltip');
-    switch (contact.type) {
-      case 'Телефон':
-        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--phone');
-        break;
-      case 'Email':
-        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--mail');
-        break;
-      case 'Facebook':
-        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--fb');
-        break;
-      case 'Vkontakte':
-        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--vk');
-        break;
-      default:
-        $divMarker.classList.add('tooltip__marker', 'tooltip__marker--other');
-    }
-    $divTooltipText.classList.add('tooltip__text');
-    $divTooltipText.textContent = contact.value;
-    $divMarker.append($divTooltipText);
-    $divTooltip.append($divMarker);
-    $clientTdContacts.append($divTooltip);
-    // $divTooltip.append($divTooltipText);
-  });
-
-  const $clientButtonsWrap = document.createElement('div');
-  const $clientDeleteBtn = document.createElement('button');
-  const $clientChangeBtn = document.createElement('button');
-
-  //добавляем классы
-  $clientTr.classList.add('table__row');
-  $clientTdID.classList.add('table__data', 'id');
-  $clientTdName.classList.add('table__data');
-  $clientTdCreated.classList.add('table__data', 'dates');
-  $clientTdChanged.classList.add('table__data', 'dates');
-  $clientTdContacts.classList.add('table__data', 'contacts');
-  $clientTdActions.classList.add('table__data');
-  $clientButtonsWrap.classList.add('table__buttons');
-  $spanTimeCreated.classList.add('time');
-  $spanTimeChanged.classList.add('time');
-  $clientChangeBtn.classList.add('table__btn', 'table__btn--change', 'btn-reset');
-  $clientDeleteBtn.classList.add('table__btn', 'table__btn--delete', 'btn-reset');
-
-  //добавляем содержимое
-  $clientTdID.textContent = clientObj.id;
-  $clientTdName.textContent = clientObj.fio;
-  $clientTdCreated.textContent = clientObj.created;
-  $clientTdChanged.textContent = clientObj.updated;
-  $spanTimeCreated.textContent = clientObj.timeCreated;
-  $spanTimeChanged.textContent = clientObj.timeupdated;
-  $clientChangeBtn.textContent = 'Изменить';
-  $clientDeleteBtn.textContent = 'Удалить';
-
-  //добавляем на страницу
-  $clientTr.append($clientTdID);
-  $clientTr.append($clientTdName);
-  $clientTr.append($clientTdCreated);
-  $clientTr.append($clientTdChanged);
-  $clientTr.append($clientTdContacts);
-  $clientButtonsWrap.append($clientChangeBtn);
-  $clientButtonsWrap.append($clientDeleteBtn);
-  $clientTdActions.append($clientButtonsWrap);
-  $clientTr.append($clientTdActions);
-  $clientTdCreated.append($spanTimeCreated);
-  $clientTdChanged.append($spanTimeChanged);
-
-  //обработчики кнопок
-
-  $clientDeleteBtn.addEventListener('click', (evt) => {
-    // eslint-disable-next-line no-restricted-globals
-    $confirmDialog.showModal();
-    $confirmCancelBtn.addEventListener('click', () => {
-      $confirmDialog.close();
-    });
-    $confirmCloseBtn.addEventListener('click', () => {
-      $confirmDialog.close();
-    });
-    $confirmDialog.addEventListener('close', () => {
-      if ($confirmDialog.returnValue === 'confirm') {
-        $clientTr.remove();
-        onDelete(clientObj.id);
-      }
-    });
-  });
-
-  $clientChangeBtn.addEventListener('click', () => {
-    // eslint-disable-next-line no-restricted-globals
-    const client = getClient(clientObj.id);
-    renderUpdateModal(client, deleteClient);
-  });
-
-  return $clientTr;
-};
-
-function deleteClient(clientID) {
-  fetch(`http://localhost:3000/api/clients/${clientID}`, {
-      method: 'DELETE',
-  });
-}
-
-async function getClientsArray() {
-  const response = await fetch('http://localhost:3000/api/clients');
-  const clientsList = await response.json();
-  return clientsList;
-}
-
-async function getClient(clientID) {
-  const response = await fetch(`http://localhost:3000/api/clients/${clientID}`);
-  const client = await response.json();
-  return client;
-}
-
-async function renderClientsTable(clients) {
-  const clientsList = await clients;
-  $tableBody.innerHTML = '';
-
-  if (clientsList !== null && clientsList !== '') {
-    $tableLoad.classList.add('hidden');
-    let copyClientsList = [...clientsList];
-    const currentDate = new Date();
-
-    copyClientsList.forEach((client) => {
-      client.fio = `${client.surname} ${client.name} ${client.lastName}`;
-      client.created = getDateString(new Date(client.createdAt));
-      client.updated = getDateString(new Date(client.updatedAt));
-      client.timeCreated = getTimeString(new Date(client.createdAt));
-      client.timeupdated = getTimeString(new Date(client.updatedAt));
-      client.madeDateTime = new Date(client.createdAt);
-      client.changedDateTime = new Date(client.updatedAt);
-    });
-
-    // сортировка
-    copyClientsList = copyClientsList.sort((a, b) => {
-      let sort = a[sortColumnFlag] > b[sortColumnFlag];
-      if (sortDirFlag === false) {
-        sort = a[sortColumnFlag] < b[sortColumnFlag];
-      }
-      if (sort) {
-        return -1;
-      }
-      return sort;
-    });
-
-    copyClientsList.forEach((client) => {
-      const $newTr = getClientItem(client, deleteClient);
-      $tableBody.append($newTr);
-    });
-  }
-};
-
-renderClientsTable(getClientsArray());
-
-$filterBtnID.addEventListener('click', () => {
-  $filterBtnID.classList.toggle('sort-toMax');
-
-  sortColumnFlag = 'id';
-  sortDirFlag = !sortDirFlag;
-  renderClientsTable(getClientsArray());
-});
-
-$filterBtnNames.addEventListener('click', () => {
-  $filterBtnNames.classList.toggle('sort-toMax');
-
-  sortColumnFlag = 'surname';
-  sortDirFlag = !sortDirFlag;
-  renderClientsTable(getClientsArray());
-});
-
-$filterBtnCreated.addEventListener('click', () => {
-  $filterBtnCreated.classList.toggle('sort-toMax');
-
-  sortColumnFlag = 'madeDateTime';
-  sortDirFlag = !sortDirFlag;
-  renderClientsTable(getClientsArray());
-});
-
-$filterBtnChanged.addEventListener('click', () => {
-  $filterBtnChanged.classList.toggle('sort-toMax');
-  sortColumnFlag = 'changedDateTime';
-  sortDirFlag = !sortDirFlag;
-  renderClientsTable(getClientsArray());
-});
-
-function getContactString(value) {
-  switch (value) {
-    case 'phone':
-      return 'Телефон';
-      break;
-    case 'additional-phone':
-      return 'Телефон';
-      break;
-    case 'fb':
-      return 'Facebook';
-      break;
-    case 'vk':
-      return 'Vkontakte';
-      break;
-    case 'email':
-      return 'Email';
-      break;
-    default:
-      return 'Другое';
-  }
-};
-
-function getContactType(value) {
-  switch (value) {
-    case 'Телефон':
-      return 'phone';
-      break;
-    case 'Доп.телефон':
-      return 'additional-phone';
-      break;
-    case 'Facebook':
-      return 'fb';
-      break;
-    case 'Vkontakte':
-      return 'vk';
-      break;
-    case 'Email':
-      return 'email';
-      break;
-    default:
-      return 'other';
-  }
-};
-
 function getContactsArray() {
   const $selects = document.querySelectorAll('select');
   const $contactInputs = document.querySelectorAll('.contact-input');
@@ -635,70 +654,50 @@ function getContactsArray() {
   return contacts;
 };
 
-$newClientForm.addEventListener('submit', async (evt) => {
-  evt.preventDefault();
-  sendData(onNewClientFormSent, throwNewClientError);
-});
-
-$newContactButton.addEventListener('click', (evt) => {
-  evt.preventDefault();
+function getUpdatedContactsArray() {
   const contactElements = document.querySelectorAll('.add-new-contact');
-  if (contactElements.length === 10) {
-    $newContactButton.classList.add('hidden');
-    return;
-  } else {
-    $newContactButton.classList.remove('hidden');
-    const newContact = createContactElement();
-    contactsWrapper.append(newContact);
-    contactsWrapper.classList.remove('hidden');
-    const currentElements = document.querySelectorAll('.add-new-contact');
-      if (currentElements.length === 10) {
-        $newContactButton.classList.add('hidden');
-        return;
-      }
-  }
-});
-
-$newClientOpenBtn.addEventListener('click', () => {
-  $newClientModal.classList.remove('hidden');
-  $overlay.classList.remove('hidden');
-});
-
-function onNewClientModalClose() {
-  $newClientModal.classList.add('hidden');
-  $overlay.classList.add('hidden');
-  const $newClientInputs = document.querySelectorAll('.new-client__input');
-  $newClientInputs.forEach((input) => {
-    input.value = '';
+  const updatedContacts = [];
+  contactElements.forEach((element) => {
+    updatedContacts.push({
+      type: getContactString(element.querySelector('select').value),
+      value: element.querySelector('input').value,
+    });
   });
-  const contacts = $newClientModal.querySelectorAll('.add-new-contact');
-  contacts.forEach((contact) => contact.remove());
-  $newClientSurnameLabel.classList.add('form-modal__label--surname');
-  $newClientNameLabel.classList.add('form-modal__label--name');
-  $newClientLastnameLabel.classList.add('form-modal__label--lastname');
-  $newContactButton.classList.remove('hidden');
-  contactsWrapper.classList.add('hidden');
+  return updatedContacts;
 };
 
-$newClientModalClose.addEventListener('click', () => {
-  onNewClientModalClose();
+// обработчик поля поиска
+
+$searchInput.addEventListener('input', () => {
+  if ($searchInput.value === '') {
+    renderClientsTable(getClientsArray());
+    return;
+  }
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    renderClientsTable(getRequestedClients($searchInput.value));
+  }, 300);
 });
-
-$newClientCancel.addEventListener('click', () => {
-  onNewClientModalClose();
-});
-
-function onNewClientFormSent() {
-  onNewClientModalClose();
-  renderClientsTable(getClientsArray());
-};
-
-function throwNewClientError(errorText) {
-  $newClientError.textContent = '';
-  $newClientError.textContent = errorText;
-}
 
 // работа с сервером
+
+async function getClientsArray() {
+  const response = await fetch('http://localhost:3000/api/clients');
+  const clientsList = await response.json();
+  return clientsList;
+}
+
+async function getClient(clientID) {
+  const response = await fetch(`http://localhost:3000/api/clients/${clientID}`);
+  const client = await response.json();
+  return client;
+}
+
+function deleteClient(clientID) {
+  fetch(`http://localhost:3000/api/clients/${clientID}`, {
+      method: 'DELETE',
+  });
+}
 
 function sendChanges(onSuccess, onFail, client, surname, name, lastname) {
   fetch(`http://localhost:3000/api/clients/${client.id}`, {
@@ -707,7 +706,7 @@ function sendChanges(onSuccess, onFail, client, surname, name, lastname) {
         surname: surname.trim(),
         name: name.trim(),
         lastName: lastname.trim(),
-        contacts: getupdatedContactsArray(),
+        contacts: getUpdatedContactsArray(),
       }),
   })
   .then((response) => {
@@ -781,26 +780,35 @@ async function getRequestedClients(searchString) {
   return clientsList;
 };
 
-$searchInput.addEventListener('input', () => {
-  if ($searchInput.value === '') {
-    renderClientsTable(getClientsArray());
-    return;
-  }
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    renderClientsTable(getRequestedClients($searchInput.value));
-  }, 300);
+// фильтры
+
+$filterBtnID.addEventListener('click', () => {
+  $filterBtnID.classList.toggle('sort-toMax');
+
+  sortColumnFlag = 'id';
+  sortDirFlag = !sortDirFlag;
+  renderClientsTable(getClientsArray());
 });
 
-// закрытие модальных окон по нажатию на фон
+$filterBtnNames.addEventListener('click', () => {
+  $filterBtnNames.classList.toggle('sort-toMax');
 
-$newClientForm.addEventListener('click', (evt) => {
-  evt._isClickWithinNewModal = true;
+  sortColumnFlag = 'surname';
+  sortDirFlag = !sortDirFlag;
+  renderClientsTable(getClientsArray());
 });
 
-$newClientModal.addEventListener('click', (evt) => {
-  if (evt._isClickWithinNewModal) {
-    return;
-  }
-  onNewClientModalClose();
+$filterBtnCreated.addEventListener('click', () => {
+  $filterBtnCreated.classList.toggle('sort-toMax');
+
+  sortColumnFlag = 'madeDateTime';
+  sortDirFlag = !sortDirFlag;
+  renderClientsTable(getClientsArray());
+});
+
+$filterBtnChanged.addEventListener('click', () => {
+  $filterBtnChanged.classList.toggle('sort-toMax');
+  sortColumnFlag = 'changedDateTime';
+  sortDirFlag = !sortDirFlag;
+  renderClientsTable(getClientsArray());
 });
