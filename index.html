@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/choices.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/media.css">
+  <title>Skillbus CRM</title>
+</head>
+
+<body class="page">
+  <header class="page__header header">
+    <div class="container header__wrapper">
+      <img class="page__logo" src="img/logo.svg" alt="Логотип компании Skillbus">
+      <input class="page__search" type="search" placeholder="Введите запрос">
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container main__wrapper">
+      <h1 class="main__title">Клиенты</h1>
+      <table class="main__table table">
+        <tr>
+          <th class="table__head"><button class="table__filter-btn table__filter-btn--id  btn-reset">ID</button></th>
+          <th class="table__head"><button class="table__filter-btn table__filter-btn--names btn-reset">Фамилия Имя Отчество</button></th>
+          <th class="table__head"><button class="table__filter-btn table__filter-btn--created btn-reset">Дата и время создания</button></th>
+          <th class="table__head"><button class="table__filter-btn table__filter-btn--changed btn-reset">Последние изменения</button></th>
+          <th class="table__head">Контакты</th>
+          <th class="table__head">Действия</th>
+        </tr>
+        <!-- сюда вставим строки -->
+        <tbody id="table-body"></tbody>
+      </table>
+      <div class="table-load">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 20C2 29.941 10.059 38 20 38C29.941 38 38 29.941 38 20C38 10.059 29.941 2 20 2C17.6755 2 15.454 2.4405 13.414 3.243" stroke="#9873FF" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <button class="main__btn btn-reset" id="add-client">Добавить клиента</button>
+    </div>
+  </main>
+
+  <!-- форма добавления нового клиента -->
+  <div class="new-client form-modal hidden" aria-hidden="true">
+    <div class="form-modal__wrap">
+
+      <form class="form-modal__window" id="new-client__form" method="post" enctype="multipart/form-data" action="http://localhost:3000/api/clients">
+        <div class="form-top-block">
+          <h2 class="form-modal__caption">Новый клиент</h2>
+        </div>
+        <fieldset class="form-modal__fieldset">
+          <div class="form-field">
+            <label class="form-modal__label form-modal__label--surname" id="surname-label">Фамилия<span class="required">*</span></label>
+            <input class="form-modal__input new-client__input" id="new-client__surname" type="text" placeholder="" name="surname">
+          </div>
+          <div class="form-field">
+            <label class="form-modal__label form-modal__label--name" id="name-label">Имя<span class="required">*</span></label>
+            <input class="form-modal__input new-client__input" id="new-client__name" type="text" placeholder="" name="name">
+          </div>
+          <div class="form-field">
+            <label class="form-modal__label form-modal__label--lastname" id="lastname-label">Отчество</label>
+            <input class="form-modal__input new-client__input" id="new-client__lastname" type="text" placeholder="" name="lastName">
+          </div>
+        </fieldset>
+        <div class="form-btns">
+
+          <div class="form-contacts-wrapper new-client__contacts hidden">
+
+          </div>
+          <button class="contact-btn btn-reset">
+            <span>Добавить контакт</span>
+          </button>
+          <div class="new-client__error"></div>
+          <button class="save-btn btn-reset" type="submit" id="new-client__save-btn">Сохранить</button>
+          <button class="create-cancel-btn delete-btn btn-reset" type="button">Отмена</button>
+        </div>
+        <button class="close-modal-btn cancel-btn btn-reset" type="button"></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- окно удаления -->
+  <dialog class="confirm-modal" id="confirm-dialog">
+    <form method="dialog">
+      <h2 class="confirm-modal__title">Удалить клиента</h2>
+      <p class="confirm-modal__message">Вы действительно хотите удалить данного клиента?</p>
+      <div class="confirm-modal__error"></div>
+      <div class="form-btns">
+        <button class="confirm-btn btn-reset dialog-close" value="confirm" type="submit">Удалить</button>
+        <button class="confirm-cancel-btn btn-reset dialog-close" value="cancel" type="reset">Отмена</button>
+      </div>
+      <button class="confirm-close-btn btn-reset dialog-close" type="button" value="cancel"></button>
+    </form>
+  </dialog>
+
+  <!-- шаблон строки таблицы -->
+  <template id="row">
+    <tr class="table__row">
+      <td class="table__data id" id="id">123455</td>
+      <td class="table__data" id="name">Скворцов Денис Юрьевич</td>
+      <td class="table__data" id="date-created">21.02.2021<span class="time">12:41</span></td>
+      <td class="table__data" id="date-changed">21.02.2021<span class="time">14:50</span></td>
+      <td class="table__data contacts" id="contacts">
+        <div class="contacts__icon tooltip">
+          <div class="tooltip__marker toooltip__marker--phone">
+            <div class="tooltip__text">+7 (985) 443-00-00</div>
+          </div>
+        </div>
+      </td>
+      <td class="table__data" id="actions">
+        <div class="table__buttons">
+          <button class="table__btn table__btn--change btn-reset" id="change-info">Изменить</button>
+          <button class="table__btn table__btn--delete btn-reset" id="delete-client">Удалить</button>
+        </div>
+      </td>
+
+    </tr>
+  </template>
+   <!-- шаблон добавления нового контакта -->
+  <template id="new-contact">
+    <div class="add-new-contact">
+      <select class="js-choice">
+        <option value="phone" selected>Телефон</option>
+        <option value="additional-phone">Доп. телефон</option>
+        <option value="email">Email</option>
+        <option value="vk">Vk</option>
+        <option value="fb">Facebook</option>
+      </select>
+      <div class="input-wrapper">
+        <input class="contact-input" type="text">
+        <button class="clear-btn btn-reset hidden">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g clip-path="url(#clip0_121_1291)">
+            <path d="M8 2C4.682 2 2 4.682 2 8C2 11.318 4.682 14 8 14C11.318 14 14 11.318 14 8C14 4.682 11.318 2 8 2ZM8 12.8C5.354 12.8 3.2 10.646 3.2 8C3.2 5.354 5.354 3.2 8 3.2C10.646 3.2 12.8 5.354 12.8 8C12.8 10.646 10.646 12.8 8 12.8ZM10.154 5L8 7.154L5.846 5L5 5.846L7.154 8L5 10.154L5.846 11L8 8.846L10.154 11L11 10.154L8.846 8L11 5.846L10.154 5Z" fill="#B0B0B0"/>
+            </g>
+            <defs>
+            <clipPath id="clip0_121_1291">
+            <rect width="16" height="16" fill="white"/>
+            </clipPath>
+            </defs>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <div class="overlay hidden"></div>
+
+  <script src="libs/choices.min.js"></script>
+  <script defer src="js/script.js"></script>
+</body>
+
+</html>

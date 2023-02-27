@@ -1,0 +1,118 @@
+@media (max-width: 768px) {
+  .container {
+    width: 768px;
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .table {
+    width: 728px;
+  }
+
+  .table-load {
+    width: 768px;
+  }
+
+  .table__data {
+    padding: 10px 10px;
+  }
+
+  .dates {
+    padding: 20px 12px;
+    word-break: break-word;
+    width: 96px;
+  }
+
+  .time {
+    margin-left: 0;
+  }
+
+  .table__buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table__btn:not(:last-child) {
+    margin-right: 0;
+  }
+
+  .contacts {
+    padding: 20px 10px;
+  }
+
+  .table__filter-btn--created {
+    font-size: 10px;
+    text-align: left;
+    background-position: bottom 2px right 20px;
+  }
+
+  .table__filter-btn--changed {
+    text-align: left;
+    background-position: bottom 2px right;
+  }
+}
+
+@media (max-width: 320px) {
+  .container {
+    width: 320px;
+    overflow: scroll;
+  }
+
+  .page__search {
+    display: none;
+  }
+
+  .header__wrapper {
+    padding: 7px 0;
+  }
+
+  .page__logo {
+    margin: 0 auto;
+    width: 24px;
+    height: 24px;
+  }
+
+  .contact-btn {
+    width: 300px;
+  }
+
+  .form-modal__window {
+    width: 300px;
+    padding: 24px 15px;
+  }
+
+  .client-info__contacts-wrapper {
+    width: 300px;
+    transform: translateX(-15px);
+  }
+
+  .choices__inner {
+    min-width: 110px;
+  }
+
+  .contact-input {
+    width: 175px;
+  }
+
+  .cancel-btn {
+    top: 5px;
+    right: 5px;
+  }
+
+  .form-top-block {
+    gap: 7px;
+  }
+
+  .form-modal__caption {
+    font-size: 16px;
+  }
+
+  .confirm-modal {
+    padding: 22px 12px;
+  }
+
+  .confirm-close-btn {
+    top: 5px;
+    right: 5px;
+  }
+}
