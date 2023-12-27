@@ -682,25 +682,25 @@ $searchInput.addEventListener('input', () => {
 // работа с сервером
 
 async function getClientsArray() {
-  const response = await fetch('http://localhost:3000/api/clients');
+  const response = await fetch('http://localhost:10000/api/clients');
   const clientsList = await response.json();
   return clientsList;
 }
 
 async function getClient(clientID) {
-  const response = await fetch(`http://localhost:3000/api/clients/${clientID}`);
+  const response = await fetch(`http://localhost:10000/api/clients/${clientID}`);
   const client = await response.json();
   return client;
 }
 
 function deleteClient(clientID) {
-  fetch(`http://localhost:3000/api/clients/${clientID}`, {
+  fetch(`http://localhost:10000/api/clients/${clientID}`, {
       method: 'DELETE',
   });
 }
 
 function sendChanges(onSuccess, onFail, client, surname, name, lastname) {
-  fetch(`http://localhost:3000/api/clients/${client.id}`, {
+  fetch(`http://localhost:10000/api/clients/${client.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
         surname: surname.trim(),
@@ -737,7 +737,7 @@ function sendChanges(onSuccess, onFail, client, surname, name, lastname) {
 };
 
 function sendData(onSuccess, onFail) {
-  fetch('http://localhost:3000/api/clients', {
+  fetch('http://localhost:10000/api/clients', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -775,7 +775,7 @@ function sendData(onSuccess, onFail) {
 };
 
 async function getRequestedClients(searchString) {
-  const response = await fetch(`http://localhost:3000/api/clients?search=${searchString}`);
+  const response = await fetch(`http://localhost:10000/api/clients?search=${searchString}`);
   const clientsList = await response.json();
   return clientsList;
 };
